@@ -1,0 +1,204 @@
+       01  EMPMAP3I.
+           02  FILLER PIC X(12).
+           02  TRANSIDL    COMP  PIC  S9(4).
+           02  TRANSIDF    PICTURE X.
+           02  FILLER REDEFINES TRANSIDF.
+             03 TRANSIDA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  TRANSIDI  PIC X(4).
+           02  EMPNOL    COMP  PIC  S9(4).
+           02  EMPNOF    PICTURE X.
+           02  FILLER REDEFINES EMPNOF.
+             03 EMPNOA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  EMPNOI  PIC X(6).
+           02  FIRSTNML    COMP  PIC  S9(4).
+           02  FIRSTNMF    PICTURE X.
+           02  FILLER REDEFINES FIRSTNMF.
+             03 FIRSTNMA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  FIRSTNMI  PIC X(12).
+           02  MIDINITL    COMP  PIC  S9(4).
+           02  MIDINITF    PICTURE X.
+           02  FILLER REDEFINES MIDINITF.
+             03 MIDINITA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  MIDINITI  PIC X(1).
+           02  LASTNAML    COMP  PIC  S9(4).
+           02  LASTNAMF    PICTURE X.
+           02  FILLER REDEFINES LASTNAMF.
+             03 LASTNAMA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  LASTNAMI  PIC X(15).
+           02  WORKDEPL    COMP  PIC  S9(4).
+           02  WORKDEPF    PICTURE X.
+           02  FILLER REDEFINES WORKDEPF.
+             03 WORKDEPA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  WORKDEPI  PIC X(3).
+           02  PHONENOL    COMP  PIC  S9(4).
+           02  PHONENOF    PICTURE X.
+           02  FILLER REDEFINES PHONENOF.
+             03 PHONENOA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  PHONENOI  PIC X(4).
+           02  HIREDATL    COMP  PIC  S9(4).
+           02  HIREDATF    PICTURE X.
+           02  FILLER REDEFINES HIREDATF.
+             03 HIREDATA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  HIREDATI  PIC X(10).
+           02  JOBL    COMP  PIC  S9(4).
+           02  JOBF    PICTURE X.
+           02  FILLER REDEFINES JOBF.
+             03 JOBA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  JOBI  PIC X(8).
+           02  EDLEVELL    COMP  PIC  S9(4).
+           02  EDLEVELF    PICTURE X.
+           02  FILLER REDEFINES EDLEVELF.
+             03 EDLEVELA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  EDLEVELI  PIC X(4).
+           02  SEXL    COMP  PIC  S9(4).
+           02  SEXF    PICTURE X.
+           02  FILLER REDEFINES SEXF.
+             03 SEXA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  SEXI  PIC X(1).
+           02  BIRTHDAL    COMP  PIC  S9(4).
+           02  BIRTHDAF    PICTURE X.
+           02  FILLER REDEFINES BIRTHDAF.
+             03 BIRTHDAA    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  BIRTHDAI  PIC X(10).
+           02  SAL1L    COMP  PIC  S9(4).
+           02  SAL1F    PICTURE X.
+           02  FILLER REDEFINES SAL1F.
+             03 SAL1A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  SAL1I  PIC X(7).
+           02  SAL2L    COMP  PIC  S9(4).
+           02  SAL2F    PICTURE X.
+           02  FILLER REDEFINES SAL2F.
+             03 SAL2A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  SAL2I  PIC X(2).
+           02  BON1L    COMP  PIC  S9(4).
+           02  BON1F    PICTURE X.
+           02  FILLER REDEFINES BON1F.
+             03 BON1A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  BON1I  PIC X(7).
+           02  BON2L    COMP  PIC  S9(4).
+           02  BON2F    PICTURE X.
+           02  FILLER REDEFINES BON2F.
+             03 BON2A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  BON2I  PIC X(2).
+           02  COM1L    COMP  PIC  S9(4).
+           02  COM1F    PICTURE X.
+           02  FILLER REDEFINES COM1F.
+             03 COM1A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  COM1I  PIC X(7).
+           02  COM2L    COMP  PIC  S9(4).
+           02  COM2F    PICTURE X.
+           02  FILLER REDEFINES COM2F.
+             03 COM2A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  COM2I  PIC X(2).
+           02  MSG1L    COMP  PIC  S9(4).
+           02  MSG1F    PICTURE X.
+           02  FILLER REDEFINES MSG1F.
+             03 MSG1A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  MSG1I  PIC X(79).
+           02  DUMMY1L    COMP  PIC  S9(4).
+           02  DUMMY1F    PICTURE X.
+           02  FILLER REDEFINES DUMMY1F.
+             03 DUMMY1A    PICTURE X.
+           02  FILLER   PICTURE X(2).
+           02  DUMMY1I  PIC X(1).
+       01  EMPMAP3O REDEFINES EMPMAP3I.
+           02  FILLER PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  TRANSIDC    PICTURE X.
+           02  TRANSIDH    PICTURE X.
+           02  TRANSIDO  PIC X(4).
+           02  FILLER PICTURE X(3).
+           02  EMPNOC    PICTURE X.
+           02  EMPNOH    PICTURE X.
+           02  EMPNOO  PIC X(6).
+           02  FILLER PICTURE X(3).
+           02  FIRSTNMC    PICTURE X.
+           02  FIRSTNMH    PICTURE X.
+           02  FIRSTNMO  PIC X(12).
+           02  FILLER PICTURE X(3).
+           02  MIDINITC    PICTURE X.
+           02  MIDINITH    PICTURE X.
+           02  MIDINITO  PIC X(1).
+           02  FILLER PICTURE X(3).
+           02  LASTNAMC    PICTURE X.
+           02  LASTNAMH    PICTURE X.
+           02  LASTNAMO  PIC X(15).
+           02  FILLER PICTURE X(3).
+           02  WORKDEPC    PICTURE X.
+           02  WORKDEPH    PICTURE X.
+           02  WORKDEPO  PIC X(3).
+           02  FILLER PICTURE X(3).
+           02  PHONENOC    PICTURE X.
+           02  PHONENOH    PICTURE X.
+           02  PHONENOO  PIC X(4).
+           02  FILLER PICTURE X(3).
+           02  HIREDATC    PICTURE X.
+           02  HIREDATH    PICTURE X.
+           02  HIREDATO  PIC X(10).
+           02  FILLER PICTURE X(3).
+           02  JOBC    PICTURE X.
+           02  JOBH    PICTURE X.
+           02  JOBO  PIC X(8).
+           02  FILLER PICTURE X(3).
+           02  EDLEVELC    PICTURE X.
+           02  EDLEVELH    PICTURE X.
+           02  EDLEVELO  PIC X(4).
+           02  FILLER PICTURE X(3).
+           02  SEXC    PICTURE X.
+           02  SEXH    PICTURE X.
+           02  SEXO  PIC X(1).
+           02  FILLER PICTURE X(3).
+           02  BIRTHDAC    PICTURE X.
+           02  BIRTHDAH    PICTURE X.
+           02  BIRTHDAO  PIC X(10).
+           02  FILLER PICTURE X(3).
+           02  SAL1C    PICTURE X.
+           02  SAL1H    PICTURE X.
+           02  SAL1O  PIC X(7).
+           02  FILLER PICTURE X(3).
+           02  SAL2C    PICTURE X.
+           02  SAL2H    PICTURE X.
+           02  SAL2O  PIC X(2).
+           02  FILLER PICTURE X(3).
+           02  BON1C    PICTURE X.
+           02  BON1H    PICTURE X.
+           02  BON1O  PIC X(7).
+           02  FILLER PICTURE X(3).
+           02  BON2C    PICTURE X.
+           02  BON2H    PICTURE X.
+           02  BON2O  PIC X(2).
+           02  FILLER PICTURE X(3).
+           02  COM1C    PICTURE X.
+           02  COM1H    PICTURE X.
+           02  COM1O  PIC X(7).
+           02  FILLER PICTURE X(3).
+           02  COM2C    PICTURE X.
+           02  COM2H    PICTURE X.
+           02  COM2O  PIC X(2).
+           02  FILLER PICTURE X(3).
+           02  MSG1C    PICTURE X.
+           02  MSG1H    PICTURE X.
+           02  MSG1O  PIC X(79).
+           02  FILLER PICTURE X(3).
+           02  DUMMY1C    PICTURE X.
+           02  DUMMY1H    PICTURE X.
+           02  DUMMY1O  PIC X(1).

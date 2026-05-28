@@ -1,0 +1,160 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EMPDEL2.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  WS-DBDATA.
+           05  WS-EMPNO              PIC X(6).
+           05  WS-SUCCESS            PIC X.
+           05  WS-SQL-CODE           PIC S9(9) COMP-4.
+           05  WS-SQL-STATE          PIC X(5).
+      *****EXEC SQL INCLUDE SQLCA END-EXEC.
+        01 SQLCA.
+           05 SQLCAID     PIC X(8).
+           05 SQLCABC     PIC S9(9) COMP-4.
+           05 SQLCODE     PIC S9(9) COMP-4.
+           05 SQLERRM.
+              49 SQLERRML PIC S9(4) COMP-4.
+              49 SQLERRMC PIC X(70).
+           05 SQLERRP     PIC X(8).
+           05 SQLERRD     OCCURS 6 TIMES
+                          PIC S9(9) COMP-4.
+           05 SQLWARN.
+              10 SQLWARN0 PIC X.
+              10 SQLWARN1 PIC X.
+              10 SQLWARN2 PIC X.
+              10 SQLWARN3 PIC X.
+              10 SQLWARN4 PIC X.
+              10 SQLWARN5 PIC X.
+              10 SQLWARN6 PIC X.
+              10 SQLWARN7 PIC X.
+           05 SQLEXT.
+              10 SQLWARN8 PIC X.
+              10 SQLWARN9 PIC X.
+              10 SQLWARNA PIC X.
+              10 SQLSTATE PIC X(5).
+      *****EXEC SQL INCLUDE MYEMP END-EXEC.
+      ******************************************************************
+      * DCLGEN TABLE(IBMUSER.MY_EMP)                                   *
+      *        LIBRARY(IBMUSER.EMPMAINT.CICS(MYEMP))                   *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        STRUCTURE(MYEMPRECORD)                                  *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+      *****EXEC SQL DECLARE IBMUSER.MY_EMP TABLE
+      *****( EMPNO                          CHAR(6) NOT NULL,
+      *****  FIRSTNME                       VARCHAR(12) NOT NULL,
+      *****  MIDINIT                        CHAR(1) NOT NULL,
+      *****  LASTNAME                       VARCHAR(15) NOT NULL,
+      *****  WORKDEPT                       CHAR(3),
+      *****  PHONENO                        CHAR(4),
+      *****  HIREDATE                       DATE,
+      *****  JOB                            CHAR(8),
+      *****  EDLEVEL                        SMALLINT,
+      *****  SEX                            CHAR(1),
+      *****  BIRTHDATE                      DATE,
+      *****  SALARY                         DECIMAL(9, 2),
+      *****  BONUS                          DECIMAL(9, 2),
+      *****  COMM                           DECIMAL(9, 2)
+      *****) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE IBMUSER.MY_EMP                     *
+      ******************************************************************
+       01  MYEMPRECORD.
+           10 EMPNO                PIC X(6).
+           10 FIRSTNME.
+              49 FIRSTNME-LEN      PIC S9(4) USAGE COMP.
+              49 FIRSTNME-TEXT     PIC X(12).
+           10 MIDINIT              PIC X(1).
+           10 LASTNAME.
+              49 LASTNAME-LEN      PIC S9(4) USAGE COMP.
+              49 LASTNAME-TEXT     PIC X(15).
+           10 WORKDEPT             PIC X(3).
+           10 PHONENO              PIC X(4).
+           10 HIREDATE             PIC X(10).
+           10 JOB                  PIC X(8).
+           10 EDLEVEL              PIC S9(4) USAGE COMP.
+           10 SEX                  PIC X(1).
+           10 BIRTHDATE            PIC X(10).
+           10 SALARY               PIC S9(7)V9(2) USAGE COMP-3.
+           10 BONUS                PIC S9(7)V9(2) USAGE COMP-3.
+           10 COMM                 PIC S9(7)V9(2) USAGE COMP-3.
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 14      *
+      ******************************************************************
+        77 SQL-TEMP      PIC X(18).
+        77 SQL-NULL      PIC S9(9) COMP-4 VALUE +0.
+        77 SQL-INIT-FLAG PIC S9(4) COMP-4 VALUE +0.
+           88 SQL-INIT-DONE VALUE +1.
+        01 SQL-PLIST2.
+           05 SQL-PLIST-CON   PIC S9(9) COMP-4 VALUE +2637824.
+           05 SQL-CALLTYPE    PIC S9(4) COMP-4 VALUE +30.
+           05 SQL-PROG-NAME   PIC X(8)         VALUE 'EMPDEL2 '.
+           05 SQL-TIMESTAMP-1 PIC S9(9) COMP-4 VALUE +475503342.
+           05 SQL-TIMESTAMP-2 PIC S9(9) COMP-4 VALUE +109880546.
+           05 SQL-SECTION     PIC S9(4) COMP-4 VALUE +1.
+           05 SQL-CODEPTR     PIC S9(9) COMP-4.
+           05 SQL-VPARMPTR    PIC S9(9) COMP-4 VALUE +0.
+           05 SQL-APARMPTR    PIC S9(9) COMP-4 VALUE +0.
+           05 SQL-STMT-NUM    PIC S9(4) COMP-4 VALUE +76.
+           05 SQL-STMT-TYPE   PIC S9(4) COMP-4 VALUE +233.
+           05 SQL-PVAR-LIST2.
+              10 PRE-SQLDAID  PIC X(8)  VALUE 'SQLDA   '.
+              10 PRE-SQLDABC  PIC S9(9) COMP-4 VALUE +60.
+              10 PRE-SQLN     PIC S9(4) COMP-4 VALUE +1.
+              10 PRE-SQLLD    PIC S9(4) COMP-4 VALUE +1.
+              10 PRE-SQLVAR.
+                12 SQLVAR-BASE1.
+                  15 SQL-PVAR-TYPE1      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN1       PIC S9(4) COMP-4 VALUE +6.
+                  15 SQL-PVAR-ADDRS1.
+                     20 SQL-PVAR-ADDR1   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND1    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME1.
+                     20 SQL-PVAR-NAMEL1  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC1  PIC X(30) VALUE ' '.
+
+       LINKAGE SECTION.
+       01  DFHCOMMAREA.
+            COPY DELCP.
+      *
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      *
+       DSNSQL SECTION.
+       SQL-SKIP.
+           GO TO SQL-INIT-END.
+       SQL-INITIAL.
+           MOVE 1 TO SQL-INIT-FLAG.
+           CALL 'DSNHADDR' USING SQL-VPARMPTR OF SQL-PLIST2 SQL-PVAR-LIS
+      -    T2.
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS1 IN
+           SQL-PVAR-LIST2 WS-EMPNO OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-CODEPTR OF SQL-PLIST2 SQLCA.
+       SQL-INIT-END.
+           CONTINUE.
+
+       000-MAIN.
+           PERFORM 1000-DELETE-RECORD
+           PERFORM 2000-GET-ME-OUT-OF-HERE.
+      *
+       1000-DELETE-RECORD.
+           MOVE COMM-EMPNO TO WS-EMPNO
+      *****EXEC SQL
+      *****    DELETE FROM IBMUSER.MY_EMP WHERE EMPNO = :WS-EMPNO
+      *****END-EXEC
+           PERFORM SQL-INITIAL UNTIL SQL-INIT-DONE
+           CALL 'DSNHLI' USING SQL-PLIST2
+           IF SQLSTATE = '00000'
+               MOVE 'Y' TO COMM-SUCCESS
+           ELSE
+               MOVE 'N' TO COMM-SUCCESS
+               MOVE SQLCODE TO COMM-SQL-CODE
+               MOVE SQLSTATE TO COMM-SQL-STATE
+           END-IF.
+      *
+       2000-GET-ME-OUT-OF-HERE.
+           EXEC CICS
+              RETURN
+           END-EXEC.

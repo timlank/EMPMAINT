@@ -1,0 +1,17 @@
+         05  COMM-EMPNO             PIC X(6).
+         05  COMM-FIRSTNME          PIC X(12).
+         05  COMM-MIDINIT           PIC X.
+         05  COMM-LASTNAME          PIC X(15).
+         05  COMM-WORKDEPT          PIC X(3).
+         05  COMM-PHONENO           PIC X(4).
+         05  COMM-HIREDATE          PIC X(10).
+         05  COMM-JOB               PIC X(8).
+         05  COMM-EDLEVEL           PIC S9(4) USAGE COMP.
+         05  COMM-SEX               PIC X.
+         05  COMM-BIRTHDATE         PIC X(10).
+         05  COMM-SALARY-PD         PIC S9(7)V9(2) USAGE COMP-3.
+         05  COMM-BONUS-PD          PIC S9(7)V9(2) USAGE COMP-3.
+         05  COMM-COMM-PD           PIC S9(7)V9(2) USAGE COMP-3.
+         05  COMM-SUCCESS           PIC X.
+         05  COMM-SQL-CODE          PIC S9(9) COMP-4.
+         05  COMM-SQL-STATE         PIC X(5).

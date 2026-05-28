@@ -1,0 +1,133 @@
+         TITLE 'Employee Maintenance - Create   '                       00000010
+         PRINT ON,NOGEN                                                 00000020
+EMPMP2   DFHMSD TYPE=MAP,LANG=COBOL,MODE=INOUT,STORAGE=AUTO,           *00000030
+               DSATTS=(COLOR,HILIGHT),MAPATTS=(COLOR,HILIGHT,VALIDN),  *
+               TIOAPFX=YES,CTRL=FREEKB,TERM=3270-2
+         TITLE 'Employee Maintenance - Create   '                       00000040
+EMPMAP2  DFHMDI SIZE=(24,80),COLUMN=1,LINE=1                            00000050
+         DFHMDF POS=(1,1),LENGTH=7,INITIAL='EMPMAP2',ATTRB=(PROT,BRT), *00000070
+               COLOR=BLUE                                               00000080
+         DFHMDF POS=(1,24),LENGTH=30,                                  *00000090
+               INITIAL='Employee Maintenance - Create ',ATTRB=(PROT,BRT*00000100
+               ),COLOR=RED                                              00000110
+* TRANSID                         TRANSID                               00000120
+TRANSID  DFHMDF POS=(1,76),LENGTH=4,ATTRB=(PROT,NORM),COLOR=BLUE        00000130
+         DFHMDF POS=(3,1),LENGTH=17,INITIAL='Employee number:*',       *00000150
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000160
+* EMPNO                           EMPNO                                 00000170
+EMPNO    DFHMDF POS=(3,23),LENGTH=6,ATTRB=(UNPROT,NORM,FSET),          *00000180
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE,VALIDN=MUSTENTER       00000190
+         DFHMDF POS=(3,30),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(5,1),LENGTH=11,INITIAL='First Name:',ATTRB=(PROT,B*00000210
+               RT),COLOR=NEUTRAL                                        00000220
+* FIRSTNME                        FIRSTNME                              00000230
+FIRSTNM  DFHMDF POS=(5,23),LENGTH=12,ATTRB=(UNPROT,NORM),              *00000240
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE
+         DFHMDF POS=(5,36),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(6,1),LENGTH=16,INITIAL='Middle Initial:',         *00000260
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000270
+* MIDINIT                         MIDINIT                               00000280
+MIDINIT  DFHMDF POS=(6,23),LENGTH=1,ATTRB=(UNPROT,NORM),               *00000290
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE
+         DFHMDF POS=(6,25),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(7,1),LENGTH=10,INITIAL='Last Name:',ATTRB=(PROT,BR*00000310
+               T),COLOR=NEUTRAL                                         00000320
+* LASTNAME                        LASTNAME                              00000330
+LASTNAM  DFHMDF POS=(7,23),LENGTH=15,ATTRB=(UNPROT,NORM),              *00000340
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE
+         DFHMDF POS=(7,39),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(8,1),LENGTH=16,INITIAL='Work Department:',        *00000360
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000370
+* WORKDEPT                        WORKDEPT                              00000380
+WORKDEP  DFHMDF POS=(8,23),LENGTH=3,ATTRB=(UNPROT,NORM),               *00000390
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE
+         DFHMDF POS=(8,27),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(9,1),LENGTH=13,INITIAL='Phone number:',           *00000410
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000420
+* PHONENO                         PHONENO                               00000430
+PHONENO  DFHMDF POS=(9,23),LENGTH=4,ATTRB=(UNPROT,NORM),               *00000440
+               COLOR=TURQUOISE,JUSTIFY=LEFT,HILIGHT=UNDERLINE
+         DFHMDF POS=(9,28),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(10,1),LENGTH=11,INITIAL='Hire Date:*',ATTRB=(PROT,*00000460
+               BRT),COLOR=NEUTRAL                                       00000470
+* HIREDATE                        HIREDATE                              00000480
+HIREDAT  DFHMDF POS=(10,23),LENGTH=10,ATTRB=(UNPROT,NORM,NUM),         *00000490
+               COLOR=TURQUOISE,JUSTIFY=LEFT,HILIGHT=UNDERLINE
+         DFHMDF POS=(10,34),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(10,40),LENGTH=12,ATTRB=(PROT,NORM),               *
+               INITIAL='(DD.MM.YYYY)',COLOR=NEUTRAL
+         DFHMDF POS=(11,1),LENGTH=4,INITIAL='Job:',ATTRB=(PROT,BRT),   *00000510
+               COLOR=NEUTRAL                                            00000520
+* JOB                             JOB                                   00000530
+JOB      DFHMDF POS=(11,23),LENGTH=8,ATTRB=(UNPROT,NORM),              *00000540
+               COLOR=TURQUOISE,JUSTIFY=LEFT,HILIGHT=UNDERLINE
+         DFHMDF POS=(11,32),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(12,1),LENGTH=17,INITIAL='Education Level:*',      *00000560
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000570
+* EDLEVEL                         EDLEVEL                               00000580
+EDLEVEL  DFHMDF POS=(12,23),LENGTH=4,ATTRB=(UNPROT,NORM,NUM,FSET),     *00000590
+               COLOR=TURQUOISE,JUSTIFY=RIGHT,HILIGHT=UNDERLINE,        *
+               VALIDN=MUSTENTER
+         DFHMDF POS=(12,28),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(12,40),LENGTH=6,ATTRB=(PROT,NORM),                *
+               COLOR=NEUTRAL,INITIAL='(9999)'
+         DFHMDF POS=(13,1),LENGTH=4,INITIAL='Sex:',ATTRB=(PROT,BRT),   *00000610
+               COLOR=NEUTRAL                                            00000620
+* SEX                             SEX                                   00000630
+SEX      DFHMDF POS=(13,23),LENGTH=1,ATTRB=(UNPROT,NORM),              *00000640
+               COLOR=TURQUOISE,JUSTIFY=LEFT,HILIGHT=UNDERLINE
+         DFHMDF POS=(13,25),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(14,1),LENGTH=11,INITIAL='Birthdate:*',ATTRB=(PROT,*00000660
+               BRT),COLOR=NEUTRAL                                       00000670
+* BIRTHDAT                        BIRTHDAT                              00000680
+BIRTHDA  DFHMDF POS=(14,23),LENGTH=10,ATTRB=(UNPROT,NORM,NUM),         *00000690
+               COLOR=TURQUOISE,JUSTIFY=LEFT,HILIGHT=UNDERLINE
+         DFHMDF POS=(14,34),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(14,40),LENGTH=12,ATTRB=(PROT,NORM),               *
+               INITIAL='(DD.MM.YYYY)',COLOR=NEUTRAL
+         DFHMDF POS=(15,1),LENGTH=8,INITIAL='Salary:*',                *00000710
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000720
+* SALARY                          SALARY                                00000730
+SAL1     DFHMDF POS=(15,23),LENGTH=7,ATTRB=(UNPROT,NORM,NUM,FSET),     *00000740
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE,JUSTIFY=RIGHT,        *
+               VALIDN=MUSTENTER
+         DFHMDF POS=(15,31),LENGTH=1,ATTRB=(ASKIP,NORM),               *
+               INITIAL='.',COLOR=NEUTRAL
+SAL2     DFHMDF POS=(15,33),LENGTH=2,ATTRB=(UNPROT,NORM,NUM,FSET),     *
+               COLOR=TURQUOISE,JUSTIFY=RIGHT,HILIGHT=UNDERLINE,        *
+               VALIDN=MUSTFILL
+         DFHMDF POS=(15,36),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(16,1),LENGTH=7,INITIAL='Bonus:*',ATTRB=(PROT,BRT),*00000760
+               COLOR=NEUTRAL                                            00000770
+* BONUS                           BONUS                                 00000780
+BON1     DFHMDF POS=(16,23),LENGTH=7,ATTRB=(UNPROT,NORM,NUM,FSET),     *00000790
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE,JUSTIFY=RIGHT,        *
+               VALIDN=MUSTENTER
+         DFHMDF POS=(16,31),LENGTH=1,ATTRB=(ASKIP,NORM),               *
+               INITIAL='.',COLOR=NEUTRAL
+BON2     DFHMDF POS=(16,33),LENGTH=2,ATTRB=(UNPROT,NORM,NUM,FSET),     *
+               COLOR=TURQUOISE,JUSTIFY=RIGHT,HILIGHT=UNDERLINE,        *
+               VALIDN=MUSTFILL
+         DFHMDF POS=(16,36),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(17,1),LENGTH=12,INITIAL='Commission:*',           *00000810
+               ATTRB=(PROT,BRT),COLOR=NEUTRAL                           00000820
+* COMM (CAN'T BE COMM BECAUSE IT CAUSES A COMMA EXPANSION) COMM         00000830
+COM1     DFHMDF POS=(17,23),LENGTH=7,ATTRB=(UNPROT,NORM,NUM,FSET),     *00000840
+               COLOR=TURQUOISE,HILIGHT=UNDERLINE,JUSTIFY=RIGHT,        *
+               VALIDN=MUSTENTER
+         DFHMDF POS=(17,31),LENGTH=1,ATTRB=(ASKIP,NORM),               *
+               INITIAL='.',COLOR=NEUTRAL
+COM2     DFHMDF POS=(17,33),LENGTH=2,ATTRB=(UNPROT,NORM,NUM,FSET),     *
+               COLOR=TURQUOISE,JUSTIFY=RIGHT,HILIGHT=UNDERLINE,        *
+               VALIDN=MUSTFILL
+         DFHMDF POS=(17,36),LENGTH=1,ATTRB=(PROT,NORM)
+         DFHMDF POS=(20,1),LENGTH=12,INITIAL='* = REQUIRED',           *
+               ATTRB=(PROT,NORM),COLOR=NEUTRAL
+* MSG                             MSG                                   00000860
+MSG1     DFHMDF POS=(23,1),LENGTH=79,ATTRB=(PROT,NORM),                *00000870
+               COLOR=YELLOW
+         DFHMDF POS=(24,1),LENGTH=21,INITIAL='PF3=END   PF12=CANCEL',  *00000890
+               ATTRB=(PROT,BRT),COLOR=BLUE                              00000900
+DUMMY1   DFHMDF POS=(24,79),LENGTH=1,ATTRB=(DRK,PROT,FSET),INITIAL=' '
+         DFHMSD TYPE=FINAL                                              00000910
+         END                                                            00000920

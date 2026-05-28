@@ -1,0 +1,800 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EMPUPD.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  SWITCHES.
+           05  VALID-DATA-SW        PIC X     VALUE 'Y'.
+               88  VALID-DATA                 VALUE 'Y'.
+       01  FLAGS.
+           05  SEND-FLAG            PIC X.
+               88  SEND-ERASE                 VALUE '1'.
+               88  SEND-DATAONLY              VALUE '2'.
+               88  SEND-DATAONLY-ALARM        VALUE '3'.
+       01  COMMUNICATION-AREA.
+           05  DI-STATUS            PIC X(15).
+       01  WS-RECSEL                PIC X(6).
+       01  WS-DBDATA.
+           05  WS-EMPNO             PIC X(6).
+           05  WS-FIRSTNME          PIC X(12).
+           05  WS-MIDINIT           PIC X.
+           05  WS-LASTNAME          PIC X(15).
+           05  WS-WORKDEPT          PIC X(3).
+           05  WS-PHONENO           PIC X(4).
+           05  WS-HIREDATE          PIC X(10).
+           05  WS-JOB               PIC X(8).
+           05  WS-EDLEVEL           PIC X(4).
+           05  WS-EDLEVEL-PD        PIC S9(4) USAGE COMP.
+           05  WS-SEX               PIC X.
+           05  WS-BIRTHDATE         PIC X(10).
+           05  WS-SALARY            PIC X(10).
+           05  WS-BONUS             PIC X(10).
+           05  WS-COMM              PIC X(10).
+           05  WS-SALARY-PD         PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-BONUS-PD          PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-COMM-PD           PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-SAL1-SRC          PIC X(7).
+           05  WS-BON1-SRC          PIC X(7).
+           05  WS-COM1-SRC          PIC X(7).
+           05  WS-SAL2-SRC          PIC X(2).
+           05  WS-BON2-SRC          PIC X(2).
+           05  WS-COM2-SRC          PIC X(2).
+           05  WS-EDITED-SALARY     PIC 9999999.99.
+           05  WS-EDITED-BONUS      PIC 9999999.99.
+           05  WS-EDITED-COMM       PIC 9999999.99.
+       01  SUBPGM-PARMS.
+           05  SUBPGM-EMPNO             PIC X(6).
+           05  SUBPGM-FIRSTNME          PIC X(12).
+           05  SUBPGM-MIDINIT           PIC X.
+           05  SUBPGM-LASTNAME          PIC X(15).
+           05  SUBPGM-WORKDEPT          PIC X(3).
+           05  SUBPGM-PHONENO           PIC X(4).
+           05  SUBPGM-HIREDATE          PIC X(10).
+           05  SUBPGM-JOB               PIC X(8).
+           05  SUBPGM-EDLEVEL-PD        PIC S9(4) USAGE COMP.
+           05  SUBPGM-SEX               PIC X.
+           05  SUBPGM-BIRTHDATE         PIC X(10).
+           05  SUBPGM-SALARY-PD         PIC S9(7)V9(2) USAGE COMP-3.
+           05  SUBPGM-BONUS-PD          PIC S9(7)V9(2) USAGE COMP-3.
+           05  SUBPGM-COMM-PD           PIC S9(7)V9(2) USAGE COMP-3.
+           05  SUBPGM-SUCCESS           PIC X.
+           05  SUBPGM-SQL-CODE          PIC S9(9) COMP-4.
+           05  SUBPGM-SQL-STATE         PIC X(5).
+      *****EXEC SQL INCLUDE SQLCA END-EXEC.
+        01 SQLCA.
+           05 SQLCAID     PIC X(8).
+           05 SQLCABC     PIC S9(9) COMP-5.
+           05 SQLCODE     PIC S9(9) COMP-5.
+           05 SQLERRM.
+              49 SQLERRML PIC S9(4) COMP-5.
+              49 SQLERRMC PIC X(70).
+           05 SQLERRP     PIC X(8).
+           05 SQLERRD     OCCURS 6 TIMES
+                          PIC S9(9) COMP-5.
+           05 SQLWARN.
+              10 SQLWARN0 PIC X.
+              10 SQLWARN1 PIC X.
+              10 SQLWARN2 PIC X.
+              10 SQLWARN3 PIC X.
+              10 SQLWARN4 PIC X.
+              10 SQLWARN5 PIC X.
+              10 SQLWARN6 PIC X.
+              10 SQLWARN7 PIC X.
+           05 SQLEXT.
+              10 SQLWARN8 PIC X.
+              10 SQLWARN9 PIC X.
+              10 SQLWARNA PIC X.
+              10 SQLSTATE PIC X(5).
+      *****EXEC SQL INCLUDE MYEMP END-EXEC.
+      ******************************************************************
+      * DCLGEN TABLE(IBMUSER.MY_EMP)                                   *
+      *        LIBRARY(IBMUSER.EMPMAINT.CICS(MYEMP))                   *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        STRUCTURE(MYEMPRECORD)                                  *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+      *****EXEC SQL DECLARE IBMUSER.MY_EMP TABLE
+      *****( EMPNO                          CHAR(6) NOT NULL,
+      *****  FIRSTNME                       VARCHAR(12) NOT NULL,
+      *****  MIDINIT                        CHAR(1) NOT NULL,
+      *****  LASTNAME                       VARCHAR(15) NOT NULL,
+      *****  WORKDEPT                       CHAR(3),
+      *****  PHONENO                        CHAR(4),
+      *****  HIREDATE                       DATE,
+      *****  JOB                            CHAR(8),
+      *****  EDLEVEL                        SMALLINT,
+      *****  SEX                            CHAR(1),
+      *****  BIRTHDATE                      DATE,
+      *****  SALARY                         DECIMAL(9, 2),
+      *****  BONUS                          DECIMAL(9, 2),
+      *****  COMM                           DECIMAL(9, 2)
+      *****) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE IBMUSER.MY_EMP                     *
+      ******************************************************************
+       01  MYEMPRECORD.
+           10 EMPNO                PIC X(6).
+           10 FIRSTNME.
+              49 FIRSTNME-LEN      PIC S9(4) USAGE COMP.
+              49 FIRSTNME-TEXT     PIC X(12).
+           10 MIDINIT              PIC X(1).
+           10 LASTNAME.
+              49 LASTNAME-LEN      PIC S9(4) USAGE COMP.
+              49 LASTNAME-TEXT     PIC X(15).
+           10 WORKDEPT             PIC X(3).
+           10 PHONENO              PIC X(4).
+           10 HIREDATE             PIC X(10).
+           10 JOB                  PIC X(8).
+           10 EDLEVEL              PIC S9(4) USAGE COMP.
+           10 SEX                  PIC X(1).
+           10 BIRTHDATE            PIC X(10).
+           10 SALARY               PIC S9(7)V9(2) USAGE COMP-3.
+           10 BONUS                PIC S9(7)V9(2) USAGE COMP-3.
+           10 COMM                 PIC S9(7)V9(2) USAGE COMP-3.
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 14      *
+      ******************************************************************
+       COPY EMPMP3.
+       COPY DFHAID.
+       COPY ATTR.
+        77 SQL-TEMP      PIC X(128).
+        77 DSN-TEMP      PIC S9(9)  COMP-5.
+        77 DSN-TMP2      PIC S9(18) COMP-3.
+        77 DSNNROWS      PIC S9(9)  COMP-5.
+        77 DSNNTYPE      PIC S9(4)  COMP-5.
+        77 DSNNLEN       PIC S9(4)  COMP-5.
+        77 SQL-NULL      PIC S9(9) COMP-5 VALUE +0.
+        77 SQL-INIT-FLAG PIC S9(4) COMP-5 VALUE +0.
+           88 SQL-INIT-DONE VALUE +1.
+        77 SQL-FILE-READ      PIC S9(9) COMP-5 VALUE +2.
+        77 SQL-FILE-CREATE    PIC S9(9) COMP-5 VALUE +8.
+        77 SQL-FILE-OVERWRITE PIC S9(9) COMP-5 VALUE +16.
+        77 SQL-FILE-APPEND    PIC S9(9) COMP-5 VALUE +32.
+        01 SQL-PLIST2.
+           05 SQL-PLIST-CON   PIC S9(9) COMP-5 VALUE +4211712.
+           05 SQL-CALLTYPE    PIC S9(4) COMP-5 VALUE +30.
+           05 SQL-PROG-NAME   PIC X(8)  VALUE X'454D505550442020'.
+           05 SQL-TIMESTAMP-1 PIC S9(9) COMP-5 VALUE +475504772.
+           05 SQL-TIMESTAMP-2 PIC S9(9) COMP-5 VALUE +464592002.
+           05 SQL-SECTION     PIC S9(4) COMP-5 VALUE +1.
+           05 SQL-CODEPTR     PIC S9(9) COMP-5.
+           05 SQL-VPARMPTR    PIC S9(9) COMP-5 VALUE +0.
+           05 SQL-APARMPTR    PIC S9(9) COMP-5 VALUE +0.
+           05 FILLER          PIC S9(4) COMP-5 VALUE +1208.
+           05 SQL-STMT-TYPE   PIC S9(4) COMP-5 VALUE +231.
+           05 SQL-STMT-NUM    PIC S9(9) COMP-5 VALUE +485.
+           05 SQL-PLIST-FLG   PIC S9(4) COMP-5 VALUE +0.
+           05 FILLER          PIC X(18) VALUE
+              X'000000000000000000000000000000000000'.
+           05 SQL-PVAR-LIST2.
+              10 PRE-SQLDAID  PIC X(8)  VALUE 'SQLDA  '.
+              10 PRE-SQLDABC  PIC S9(9) COMP-5 VALUE +60.
+              10 PRE-SQLN     PIC S9(4) COMP-5 VALUE +1.
+              10 PRE-SQLLD    PIC S9(4) COMP-5 VALUE +1.
+              10 PRE-SQLVAR.
+                12 SQLVAR-BASE1.
+                  15 SQL-PVAR-TYPE1      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-PVAR-LEN1       PIC S9(4) COMP-5 VALUE +6.
+                  15 SQL-PVAR-ADDRS1.
+                     20 SQL-PVAR-ADDR1   PIC S9(9) COMP-5.
+                     20 SQL-PVAR-IND1    PIC S9(9) COMP-5.
+                  15 SQL-PVAR-NAME1.
+                     20 SQL-PVAR-NAMEL1  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-PVAR-NAMEC1  PIC X(30) VALUE ' '.
+           05 SQL-AVAR-LIST2.
+              10 PRE-SQLDAID  PIC X(8)  VALUE 'SQLDA  '.
+              10 PRE-SQLDABC  PIC S9(9) COMP-5 VALUE +632.
+              10 PRE-SQLN     PIC S9(4) COMP-5 VALUE +14.
+              10 PRE-SQLLD    PIC S9(4) COMP-5 VALUE +14.
+              10 PRE-SQLVAR.
+                12 SQLVAR-BASE1.
+                  15 SQL-AVAR-TYPE1      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN1       PIC S9(4) COMP-5 VALUE +6.
+                  15 SQL-AVAR-ADDRS1.
+                     20 SQL-AVAR-ADDR1   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND1    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME1.
+                     20 SQL-AVAR-NAMEL1  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC1  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE2.
+                  15 SQL-AVAR-TYPE2      PIC S9(4) COMP-5 VALUE +448.
+                  15 SQL-AVAR-LEN2       PIC S9(4) COMP-5 VALUE +12.
+                  15 SQL-AVAR-ADDRS2.
+                     20 SQL-AVAR-ADDR2   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND2    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME2.
+                     20 SQL-AVAR-NAMEL2  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC2  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE3.
+                  15 SQL-AVAR-TYPE3      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN3       PIC S9(4) COMP-5 VALUE +1.
+                  15 SQL-AVAR-ADDRS3.
+                     20 SQL-AVAR-ADDR3   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND3    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME3.
+                     20 SQL-AVAR-NAMEL3  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC3  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE4.
+                  15 SQL-AVAR-TYPE4      PIC S9(4) COMP-5 VALUE +448.
+                  15 SQL-AVAR-LEN4       PIC S9(4) COMP-5 VALUE +15.
+                  15 SQL-AVAR-ADDRS4.
+                     20 SQL-AVAR-ADDR4   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND4    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME4.
+                     20 SQL-AVAR-NAMEL4  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC4  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE5.
+                  15 SQL-AVAR-TYPE5      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN5       PIC S9(4) COMP-5 VALUE +3.
+                  15 SQL-AVAR-ADDRS5.
+                     20 SQL-AVAR-ADDR5   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND5    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME5.
+                     20 SQL-AVAR-NAMEL5  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC5  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE6.
+                  15 SQL-AVAR-TYPE6      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN6       PIC S9(4) COMP-5 VALUE +4.
+                  15 SQL-AVAR-ADDRS6.
+                     20 SQL-AVAR-ADDR6   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND6    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME6.
+                     20 SQL-AVAR-NAMEL6  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC6  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE7.
+                  15 SQL-AVAR-TYPE7      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN7       PIC S9(4) COMP-5 VALUE +10.
+                  15 SQL-AVAR-ADDRS7.
+                     20 SQL-AVAR-ADDR7   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND7    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME7.
+                     20 SQL-AVAR-NAMEL7  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC7  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE8.
+                  15 SQL-AVAR-TYPE8      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN8       PIC S9(4) COMP-5 VALUE +8.
+                  15 SQL-AVAR-ADDRS8.
+                     20 SQL-AVAR-ADDR8   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND8    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME8.
+                     20 SQL-AVAR-NAMEL8  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC8  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE9.
+                  15 SQL-AVAR-TYPE9      PIC S9(4) COMP-5 VALUE +500.
+                  15 SQL-AVAR-LEN9       PIC S9(4) COMP-5 VALUE +2.
+                  15 SQL-AVAR-ADDRS9.
+                     20 SQL-AVAR-ADDR9   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND9    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME9.
+                     20 SQL-AVAR-NAMEL9  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC9  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE10.
+                  15 SQL-AVAR-TYPE10      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN10       PIC S9(4) COMP-5 VALUE +1.
+                  15 SQL-AVAR-ADDRS10.
+                     20 SQL-AVAR-ADDR10   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND10    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME10.
+                     20 SQL-AVAR-NAMEL10  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC10  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE11.
+                  15 SQL-AVAR-TYPE11      PIC S9(4) COMP-5 VALUE +452.
+                  15 SQL-AVAR-LEN11       PIC S9(4) COMP-5 VALUE +10.
+                  15 SQL-AVAR-ADDRS11.
+                     20 SQL-AVAR-ADDR11   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND11    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME11.
+                     20 SQL-AVAR-NAMEL11  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC11  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE12.
+                  15 SQL-AVAR-TYPE12      PIC S9(4) COMP-5 VALUE +484.
+                  15 SQL-AVAR-LEN12       PIC S9(4) COMP-5 VALUE +2306.
+                  15 SQL-AVAR-ADDRS12.
+                     20 SQL-AVAR-ADDR12   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND12    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME12.
+                     20 SQL-AVAR-NAMEL12  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC12  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE13.
+                  15 SQL-AVAR-TYPE13      PIC S9(4) COMP-5 VALUE +484.
+                  15 SQL-AVAR-LEN13       PIC S9(4) COMP-5 VALUE +2306.
+                  15 SQL-AVAR-ADDRS13.
+                     20 SQL-AVAR-ADDR13   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND13    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME13.
+                     20 SQL-AVAR-NAMEL13  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC13  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE14.
+                  15 SQL-AVAR-TYPE14      PIC S9(4) COMP-5 VALUE +484.
+                  15 SQL-AVAR-LEN14       PIC S9(4) COMP-5 VALUE +2306.
+                  15 SQL-AVAR-ADDRS14.
+                     20 SQL-AVAR-ADDR14   PIC S9(9) COMP-5.
+                     20 SQL-AVAR-IND14    PIC S9(9) COMP-5.
+                  15 SQL-AVAR-NAME14.
+                     20 SQL-AVAR-NAMEL14  PIC S9(4) COMP-5 VALUE +0.
+                     20 SQL-AVAR-NAMEC14  PIC X(30) VALUE ' '.
+
+       LINKAGE SECTION.
+       01  DFHCOMMAREA              PIC X(106).
+      *
+       PROCEDURE DIVISION.
+      *
+       DSNSQL SECTION.
+       SQL-SKIP.
+           GO TO SQL-INIT-END.
+       SQL-INITIAL.
+           MOVE 1 TO SQL-INIT-FLAG.
+           CALL 'DSNHADDR' USING SQL-VPARMPTR OF SQL-PLIST2 SQL-PVAR-LIS
+      -    T2.
+           CALL 'DSNHADD2' USING SQL-PVAR-ADDRS1 IN
+           SQL-PVAR-LIST2 WS-RECSEL SQL-NULL
+           CALL 'DSNHADDR' USING SQL-APARMPTR OF SQL-PLIST2 SQL-AVAR-LIS
+      -    T2.
+           CALL 'DSNHADD2' USING SQL-AVAR-ADDRS1 IN
+           SQL-AVAR-LIST2 EMPNO OF MYEMPRECORD SQL-NULL FIRSTNME OF MYEM
+      -    PRECORD SQL-NULL MIDINIT OF MYEMPRECORD SQL-NULL LASTNAME OF
+           MYEMPRECORD SQL-NULL WORKDEPT OF MYEMPRECORD SQL-NULL PHONENO
+           OF MYEMPRECORD SQL-NULL HIREDATE OF MYEMPRECORD SQL-NULL JOB
+           OF MYEMPRECORD SQL-NULL EDLEVEL OF MYEMPRECORD SQL-NULL SEX O
+      -    F MYEMPRECORD SQL-NULL BIRTHDATE OF MYEMPRECORD SQL-NULL SALA
+      -    RY OF MYEMPRECORD SQL-NULL BONUS OF MYEMPRECORD SQL-NULL COMM
+           OF MYEMPRECORD SQL-NULL.
+           CALL 'DSNHADDR' USING SQL-CODEPTR OF SQL-PLIST2 SQLCA.
+       SQL-INIT-END.
+           CONTINUE.
+
+       0000-PROCESS-EMPLOYEE-CREATE.
+           IF EIBCALEN > ZERO
+                MOVE DFHCOMMAREA TO COMMUNICATION-AREA
+           END-IF.
+           EVALUATE TRUE
+               WHEN EIBCALEN = ZERO
+                   MOVE LOW-VALUE TO EMPMAP3O
+                   MOVE 'EMUP'    TO TRANSIDO
+                   SET SEND-ERASE TO TRUE
+                   PERFORM 1400-SEND-EMPLOYEE-MAP
+                   MOVE 'FIRST TIME' TO COMMUNICATION-AREA
+               WHEN EIBAID = DFHCLEAR
+                   MOVE 'CLEAR HIT' TO COMMUNICATION-AREA
+                   MOVE LOW-VALUE TO EMPMAP3O
+                   MOVE 'EMUP'    TO TRANSIDO
+                   SET SEND-ERASE TO TRUE
+                   PERFORM 1400-SEND-EMPLOYEE-MAP
+               WHEN EIBAID = DFHPF3 OR DFHPF12
+                   EXEC CICS
+                      XCTL PROGRAM('EMPMAIN')
+                   END-EXEC
+               WHEN DI-STATUS = 'READY TO UPDATE'
+                   PERFORM 1000-PROCESS-EMPLOYEE-MAP
+               WHEN DI-STATUS = 'NEED CLEAR'
+                   EXEC CICS
+                       RETURN TRANSID('EMUP')
+                       COMMAREA(COMMUNICATION-AREA)
+                   END-EXEC
+               WHEN EIBAID = DFHPA1 OR DFHPA2 OR DFHPA3
+                   CONTINUE
+               WHEN EIBAID = DFHENTER
+                   MOVE DFHCOMMAREA TO COMMUNICATION-AREA
+                   IF DI-STATUS = 'NEXT RUN'
+                     MOVE 'N' TO VALID-DATA-SW
+                   END-IF
+                   PERFORM 1050-PROCESS-EMPLOYEE-MAP2
+               WHEN OTHER
+                   MOVE LOW-VALUE TO EMPMAP3O
+                   MOVE 'Invalid key pressed.' TO MSG1O
+                   SET SEND-DATAONLY-ALARM TO TRUE
+                   MOVE SPACES TO EMPNOO
+                   PERFORM 1400-SEND-EMPLOYEE-MAP
+           END-EVALUATE.
+           EXEC CICS
+              RETURN TRANSID('EMUP')
+                  COMMAREA(COMMUNICATION-AREA)
+           END-EXEC.
+      *
+       1000-PROCESS-EMPLOYEE-MAP.
+           MOVE DFHCOMMAREA TO COMMUNICATION-AREA
+           MOVE EMPNOO TO WS-EMPNO
+           MOVE FIRSTNMO TO WS-FIRSTNME
+           MOVE MIDINITO TO WS-MIDINIT
+           MOVE LASTNAMO TO WS-LASTNAME
+           MOVE WORKDEPO TO WS-WORKDEPT
+           MOVE PHONENOO TO WS-PHONENO
+           MOVE HIREDATO TO WS-HIREDATE
+           MOVE JOBO TO WS-JOB
+           MOVE EDLEVELO TO WS-EDLEVEL
+           MOVE SEXO TO WS-SEX
+           MOVE BIRTHDAO TO WS-BIRTHDATE
+           MOVE SAL1O TO WS-SAL1-SRC
+           MOVE SAL2O TO WS-SAL2-SRC
+           MOVE BON1O TO WS-BON1-SRC
+           MOVE BON2O TO WS-BON2-SRC
+           MOVE COM1O TO WS-COM1-SRC
+           MOVE COM2O TO WS-COM2-SRC
+           PERFORM 1100-RECEIVE-EMPLOYEE-MAP
+           PERFORM 1200-EDIT-EMPLOYEE-DATA
+           IF VALID-DATA
+               STRING
+                   WS-SAL1-SRC DELIMITED BY SIZE
+                   '.' DELIMITED BY SIZE
+                   WS-SAL2-SRC DELIMITED BY SIZE
+                   INTO WS-SALARY
+               END-STRING
+               STRING
+                   WS-BON1-SRC DELIMITED BY SIZE
+                   '.' DELIMITED BY SIZE
+                   WS-BON2-SRC DELIMITED BY SIZE
+                   INTO WS-BONUS
+               END-STRING
+               STRING
+                   WS-COM1-SRC DELIMITED BY SIZE
+                   '.' DELIMITED BY SIZE
+                   WS-COM2-SRC DELIMITED BY SIZE
+                   INTO WS-COMM
+               END-STRING
+               COMPUTE WS-EDLEVEL-PD = FUNCTION NUMVAL(WS-EDLEVEL)
+               COMPUTE WS-SALARY-PD = FUNCTION NUMVAL(WS-SALARY)
+               COMPUTE WS-BONUS-PD = FUNCTION NUMVAL(WS-BONUS)
+               COMPUTE WS-COMM-PD = FUNCTION NUMVAL(WS-COMM)
+               MOVE WS-EMPNO TO SUBPGM-EMPNO
+               MOVE WS-FIRSTNME TO SUBPGM-FIRSTNME
+               MOVE WS-MIDINIT TO SUBPGM-MIDINIT
+               MOVE WS-LASTNAME TO SUBPGM-LASTNAME
+               MOVE WS-WORKDEPT TO SUBPGM-WORKDEPT
+               MOVE WS-PHONENO TO SUBPGM-PHONENO
+               MOVE WS-HIREDATE TO SUBPGM-HIREDATE
+               MOVE WS-JOB TO SUBPGM-JOB
+               MOVE WS-EDLEVEL-PD TO SUBPGM-EDLEVEL-PD
+               MOVE WS-SEX TO SUBPGM-SEX
+               MOVE WS-BIRTHDATE TO SUBPGM-BIRTHDATE
+               MOVE WS-SALARY-PD TO SUBPGM-SALARY-PD
+               MOVE WS-BONUS-PD TO SUBPGM-BONUS-PD
+               MOVE WS-COMM-PD TO SUBPGM-COMM-PD
+               PERFORM 1300-PUT-EMPLOYEE-RECORD
+           END-IF
+               MOVE 'NEED CLEAR' TO DI-STATUS
+               SET SEND-DATAONLY-ALARM TO TRUE
+               PERFORM 1400-SEND-EMPLOYEE-MAP.
+      *
+       1050-PROCESS-EMPLOYEE-MAP2.
+           PERFORM 1100-RECEIVE-EMPLOYEE-MAP
+           PERFORM 1250-EDIT-EMPLOYEE-DATA2
+           IF VALID-DATA
+               PERFORM 1350-GET-EMPLOYEE-DATA2
+           END-IF
+           IF VALID-DATA
+               SET SEND-DATAONLY TO TRUE
+               PERFORM 1400-SEND-EMPLOYEE-MAP
+           ELSE
+               SET SEND-DATAONLY-ALARM TO TRUE
+               PERFORM 1400-SEND-EMPLOYEE-MAP
+           END-IF.
+      *
+       1100-RECEIVE-EMPLOYEE-MAP.
+           EXEC CICS
+               RECEIVE MAP('EMPMAP3')
+                       MAPSET('EMPMP3')
+                       INTO(EMPMAP3I)
+           END-EXEC
+           IF FIRSTNML NOT EQUAL 0
+             MOVE FIRSTNMO TO WS-FIRSTNME
+           END-IF
+           IF MIDINITL NOT EQUAL 0
+             MOVE MIDINITO TO WS-MIDINIT
+           END-IF
+           IF LASTNAML NOT EQUAL 0
+             MOVE LASTNAMO TO WS-LASTNAME
+           END-IF
+           IF WORKDEPL NOT EQUAL 0
+             MOVE WORKDEPO TO WS-WORKDEPT
+           END-IF
+           IF PHONENOL NOT EQUAL 0
+             MOVE PHONENOO TO WS-PHONENO
+           END-IF
+           IF HIREDATL NOT EQUAL 0
+             MOVE HIREDATO TO WS-HIREDATE
+           END-IF
+           IF JOBL NOT EQUAL 0
+             MOVE JOBO TO WS-JOB
+           END-IF
+           IF EDLEVELL NOT EQUAL 0
+             MOVE EDLEVELO TO WS-EDLEVEL
+           END-IF
+           IF SEXL NOT EQUAL 0
+             MOVE SEXO TO WS-SEX
+           END-IF
+           IF BIRTHDAL NOT EQUAL 0
+             MOVE BIRTHDAO TO WS-BIRTHDATE
+           END-IF
+           IF SAL1L NOT EQUAL 0
+             MOVE SAL1O TO WS-SAL1-SRC
+           END-IF
+           IF SAL2L NOT EQUAL 0
+             MOVE SAL2O TO WS-SAL2-SRC
+           END-IF
+           IF BON1L NOT EQUAL 0
+             MOVE BON1O TO WS-BON1-SRC
+           END-IF
+           IF BON2L NOT EQUAL 0
+             MOVE BON2O TO WS-BON2-SRC
+           END-IF
+           IF COM1L NOT EQUAL 0
+             MOVE COM1O TO WS-COM1-SRC
+           END-IF
+           IF COM2L NOT EQUAL 0
+             MOVE COM2O TO WS-COM2-SRC
+           END-IF.
+      *
+       1200-EDIT-EMPLOYEE-DATA.
+           IF COM1L = ZERO
+             OR COM1I = SPACES
+                MOVE 'You must enter a commission - PRESS CLEAR TO CONTI
+      -             'NUE' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+                MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-COM1-SRC(1:1) IS NUMERIC AND WS-COM1-SRC(2:1)
+             IS NUMERIC AND WS-COM1-SRC(3:1) IS NUMERIC AND
+             WS-COM1-SRC(4:1) IS NUMERIC AND WS-COM1-SRC(5:1) IS
+             NUMERIC AND WS-COM1-SRC(6:1) IS NUMERIC AND
+             WS-COM1-SRC(7:1) IS NUMERIC AND WS-COM2-SRC(1:1) IS NUMERIC
+             AND WS-COM2-SRC(2:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                 MOVE 'You must only have digits for commission - PRESS
+      -            'CLEAR TO TO CONTINUE'
+                    TO MSG1O
+                 MOVE 'N' TO VALID-DATA-SW
+                 MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF BON1L = ZERO
+             OR BON1I = SPACES
+                MOVE 'You must enter a bonus - PRESS CLEAR TO CONTINUE'
+                     TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+                MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-BON1-SRC(1:1) IS NUMERIC AND WS-BON1-SRC(2:1)
+             IS NUMERIC AND WS-BON1-SRC(3:1) IS NUMERIC AND
+             WS-BON1-SRC(4:1) IS NUMERIC AND WS-BON1-SRC(5:1) IS
+             NUMERIC AND WS-BON1-SRC(6:1) IS NUMERIC AND
+             WS-BON1-SRC(7:1) IS NUMERIC AND WS-BON2-SRC(1:1) IS NUMERIC
+             AND WS-BON2-SRC(2:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                 MOVE 'You must only have digits for bonus - PRESS CLEAR
+      -            ' TO CONTINUE'
+                    TO MSG1O
+                 MOVE 'N' TO VALID-DATA-SW
+                 MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF SAL1L = ZERO
+             OR SAL1I = SPACES
+                MOVE 'You must enter a salary - PRESS CLEAR TO CONTINUE'
+                    TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+                MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-SAL1-SRC(1:1) IS NUMERIC AND WS-SAL1-SRC(2:1)
+             IS NUMERIC AND WS-SAL1-SRC(3:1) IS NUMERIC AND
+             WS-SAL1-SRC(4:1) IS NUMERIC AND WS-SAL1-SRC(5:1) IS
+             NUMERIC AND WS-SAL1-SRC(6:1) IS NUMERIC AND
+             WS-SAL1-SRC(7:1) IS NUMERIC AND WS-SAL2-SRC(1:1) IS NUMERIC
+             AND WS-SAL2-SRC(2:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                 MOVE 'You must only have digits for salary - PRESS CLEA
+      -            'R TO CONTINUE'
+                    TO MSG1O
+                 MOVE 'N' TO VALID-DATA-SW
+                 MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-BIRTHDATE(3:1) NOT EQUAL '.' OR WS-BIRTHDATE(6:1)
+             NOT EQUAL '.'
+               MOVE 'You must format the birthdate with periods - PRESS
+      -         'CLEAR TO CONTINUE'
+                 TO MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+               MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-BIRTHDATE(1:1) IS NUMERIC AND WS-BIRTHDATE(2:1) IS
+              NUMERIC AND WS-BIRTHDATE(4:1) IS NUMERIC AND
+              WS-BIRTHDATE(5:1) IS NUMERIC AND WS-BIRTHDATE(7:1) IS
+              NUMERIC AND WS-BIRTHDATE(8:1) IS NUMERIC AND
+              WS-BIRTHDATE(9:1) IS NUMERIC AND WS-BIRTHDATE(10:1) IS
+              NUMERIC
+                 CONTINUE
+              ELSE
+                 MOVE 'You must only have digits for birthdate DD MM and
+      -            ' YYYY - PRESS CLEAR TO CONTINUE'
+                    TO MSG1O
+                 MOVE 'N' TO VALID-DATA-SW
+                 MOVE 'NEED CLEAR' TO DI-STATUS
+              END-IF
+           IF EDLEVELL = ZERO
+             OR EDLEVELI = SPACES
+                MOVE 'You must enter an education level - PRESS CLEAR TO
+      -            'CONTINUE' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+                MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-EDLEVEL(1:1) IS NUMERIC AND WS-EDLEVEL(2:1)
+             IS NUMERIC AND WS-EDLEVEL(3:1) IS NUMERIC AND
+             WS-EDLEVEL(4:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                 MOVE 'You must only have digits for education level - P
+      -            'RESS CLEAR TO CONTINUE'
+                    TO MSG1O
+                 MOVE 'N' TO VALID-DATA-SW
+                 MOVE 'NEED CLEAR' TO DI-STATUS
+              END-IF
+           IF WS-HIREDATE(3:1) NOT EQUAL '.' OR WS-HIREDATE(6:1)
+             NOT EQUAL '.'
+               MOVE 'You must format the hiredate with periods - PRESS C
+      -         'LEAR TO CONTINUE'
+                 TO MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+               MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF
+           IF WS-HIREDATE(1:1) IS NUMERIC AND WS-HIREDATE(2:1) IS
+              NUMERIC AND WS-HIREDATE(4:1) IS NUMERIC AND
+              WS-HIREDATE(5:1) IS NUMERIC AND WS-HIREDATE(7:1) IS
+              NUMERIC AND WS-HIREDATE(8:1) IS NUMERIC AND
+              WS-HIREDATE(9:1) IS NUMERIC AND WS-HIREDATE(10:1) IS
+              NUMERIC
+                 CONTINUE
+              ELSE
+                 MOVE 'You must only have digits for hiredate DD MM and
+      -            'YYYY - PRESS CLEAR TO CONTINUE'
+                    TO MSG1O
+                 MOVE 'N' TO VALID-DATA-SW
+                 MOVE 'NEED CLEAR' TO DI-STATUS
+              END-IF
+           IF EMPNOL NOT EQUAL 0 AND
+              EMPNOO NOT EQUAL WS-EMPNO
+                MOVE 'You cannot change an employee number - PRESS CLEAR
+      -              ' TO CONTINUE' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+                MOVE 'NEED CLEAR' TO DI-STATUS
+           END-IF.
+      *
+       1250-EDIT-EMPLOYEE-DATA2.
+           IF EMPNOL = ZERO
+             OR EMPNOI = SPACES
+                MOVE 'You must enter an employee number' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF.
+      *
+       1300-PUT-EMPLOYEE-RECORD.
+           EXEC CICS LINK
+               PROGRAM('EMPUPD2')
+               COMMAREA(SUBPGM-PARMS)
+               SYNCONRETURN
+           END-EXEC
+           IF SUBPGM-SUCCESS = 'N'
+              MOVE SUBPGM-SQL-CODE TO LASTNAMO
+              MOVE SUBPGM-SQL-STATE TO FIRSTNMO
+              MOVE 'RECORD UPDATE FAILED - SEE CODES IN FIRSTNAME AND LA
+      -       'STAME FIELDS FOR DIAGNOSIS - PRESS CLEAR KEY TO CONTINUE'
+              TO MSG1O
+           END-IF
+           IF SUBPGM-SUCCESS = 'Y'
+              MOVE 'RECORD UPDATED SUCCESSFULLY - PRESS CLEAR KEY TO CON
+      -           'TINUE'
+                  TO MSG1O
+              MOVE 'NEXT RUN' TO DI-STATUS
+           END-IF.
+      *
+       1350-GET-EMPLOYEE-DATA2.
+           MOVE SPACES TO FIRSTNMO
+           MOVE SPACES TO MIDINITO
+           MOVE SPACES TO LASTNAMO
+           MOVE SPACES TO WORKDEPO
+           MOVE SPACES TO PHONENOO
+           MOVE SPACES TO HIREDATO
+           MOVE SPACES TO JOBO
+           MOVE SPACES TO EDLEVELO
+           MOVE SPACES TO SEXO
+           MOVE SPACES TO BIRTHDAO
+           MOVE SPACES TO SAL1O
+           MOVE SPACES TO SAL2O
+           MOVE SPACES TO BON1O
+           MOVE SPACES TO BON2O
+           MOVE SPACES TO COM1O
+           MOVE SPACES TO COM2O
+           MOVE EMPNOI TO WS-RECSEL
+           MOVE SPACES TO MYEMPRECORD
+      *****EXEC SQL
+      *****    SELECT EMPNO, FIRSTNME, MIDINIT, LASTNAME,
+      *****      WORKDEPT, PHONENO, HIREDATE, JOB, EDLEVEL, SEX,
+      *****      BIRTHDATE, SALARY, BONUS, COMM
+      *****    INTO :EMPNO, :FIRSTNME, :MIDINIT, :LASTNAME,
+      *****      :WORKDEPT, :PHONENO, :HIREDATE, :JOB, :EDLEVEL,
+      *****      :SEX, :BIRTHDATE, :SALARY, :BONUS, :COMM
+      *****    FROM IBMUSER.MY_EMP
+      *****    WHERE EMPNO = :WS-RECSEL
+      *****END-EXEC
+           PERFORM SQL-INITIAL UNTIL SQL-INIT-DONE
+           CALL 'DSNHLI' USING SQL-PLIST2
+           END-CALL
+           IF SQLSTATE = '00000'
+               MOVE EMPNO             TO EMPNOO
+               MOVE FIRSTNME-TEXT     TO FIRSTNMO
+               MOVE MIDINIT           TO MIDINITO
+               MOVE LASTNAME-TEXT     TO LASTNAMO
+               MOVE WORKDEPT          TO WORKDEPO
+               MOVE PHONENO           TO PHONENOO
+               MOVE HIREDATE          TO HIREDATO
+               MOVE JOB               TO JOBO
+               MOVE EDLEVEL           TO EDLEVELO
+               MOVE SEX               TO SEXO
+               MOVE BIRTHDATE         TO BIRTHDAO
+               MOVE SALARY            TO WS-EDITED-SALARY
+               MOVE BONUS             TO WS-EDITED-BONUS
+               MOVE COMM              TO WS-EDITED-COMM
+               MOVE WS-EDITED-SALARY  TO WS-SALARY
+               MOVE WS-EDITED-BONUS   TO WS-BONUS
+               MOVE WS-EDITED-COMM    TO WS-COMM
+               UNSTRING WS-SALARY DELIMITED BY '.'
+                  INTO SAL1O
+                       SAL2O
+               END-UNSTRING
+               UNSTRING WS-BONUS DELIMITED BY '.'
+                  INTO BON1O
+                       BON2O
+               END-UNSTRING
+               UNSTRING WS-COMM DELIMITED BY '.'
+                  INTO COM1O
+                       COM2O
+               END-UNSTRING
+               MOVE 'READY TO UPDATE' TO DI-STATUS
+               MOVE SPACES TO MSG1O
+           ELSE
+               IF SQLSTATE = '02000'
+                   MOVE 'RECORD NOT FOUND - PLEASE TRY AGAIN' TO MSG1O
+               ELSE
+                   MOVE 'ANOTHER ERROR CODE WAS REPORTED' TO MSG1O
+               END-IF
+               MOVE SPACES TO FIRSTNMO
+               MOVE SPACES TO MIDINITO
+               MOVE SPACES TO LASTNAMO
+               MOVE SPACES TO WORKDEPO
+               MOVE SPACES TO PHONENOO
+               MOVE SPACES TO HIREDATO
+               MOVE SPACES TO JOBO
+               MOVE SPACES TO EDLEVELO
+               MOVE SPACES TO SEXO
+               MOVE SPACES TO BIRTHDAO
+           END-IF.
+      *
+       1400-SEND-EMPLOYEE-MAP.
+           EVALUATE TRUE
+               WHEN SEND-ERASE
+                   EXEC CICS
+                       SEND MAP('EMPMAP3')
+                            MAPSET('EMPMP3')
+                            FROM(EMPMAP3O)
+                            CURSOR(183)
+                            ERASE
+                   END-EXEC
+               WHEN SEND-DATAONLY
+                   EXEC CICS
+                       SEND MAP('EMPMAP3')
+                            MAPSET('EMPMP3')
+                            FROM(EMPMAP3O)
+                            CURSOR(183)
+                            DATAONLY
+                   END-EXEC
+               WHEN SEND-DATAONLY-ALARM
+                   EXEC CICS
+                       SEND MAP('EMPMAP3')
+                            MAPSET('EMPMP3')
+                            FROM(EMPMAP3O)
+                            CURSOR(183)
+                            DATAONLY
+                            ALARM
+                   END-EXEC
+           END-EVALUATE.
+      *

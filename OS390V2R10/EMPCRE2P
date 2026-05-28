@@ -1,0 +1,336 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EMPCRE2.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  WS-DBDATA.
+           05  WS-EMPNO              PIC X(6).
+           05  WS-FIRSTNME           PIC X(12).
+           05  WS-MIDINIT            PIC X.
+           05  WS-LASTNAME           PIC X(15).
+           05  WS-WORKDEPT           PIC X(3).
+           05  WS-PHONENO            PIC X(4).
+           05  WS-HIREDATE           PIC X(10).
+           05  WS-JOB                PIC X(8).
+           05  WS-EDLEVEL            PIC S9(4) USAGE COMP.
+           05  WS-SEX                PIC X.
+           05  WS-BIRTHDATE          PIC X(10).
+           05  WS-SALARY-PD          PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-BONUS-PD           PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-COMM-PD            PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-SUCCESS            PIC X.
+           05  WS-SQL-CODE           PIC S9(9) COMP-4.
+           05  WS-SQL-STATE          PIC X(5).
+      *****EXEC SQL INCLUDE SQLCA END-EXEC.
+        01 SQLCA.
+           05 SQLCAID     PIC X(8).
+           05 SQLCABC     PIC S9(9) COMP-4.
+           05 SQLCODE     PIC S9(9) COMP-4.
+           05 SQLERRM.
+              49 SQLERRML PIC S9(4) COMP-4.
+              49 SQLERRMC PIC X(70).
+           05 SQLERRP     PIC X(8).
+           05 SQLERRD     OCCURS 6 TIMES
+                          PIC S9(9) COMP-4.
+           05 SQLWARN.
+              10 SQLWARN0 PIC X.
+              10 SQLWARN1 PIC X.
+              10 SQLWARN2 PIC X.
+              10 SQLWARN3 PIC X.
+              10 SQLWARN4 PIC X.
+              10 SQLWARN5 PIC X.
+              10 SQLWARN6 PIC X.
+              10 SQLWARN7 PIC X.
+           05 SQLEXT.
+              10 SQLWARN8 PIC X.
+              10 SQLWARN9 PIC X.
+              10 SQLWARNA PIC X.
+              10 SQLSTATE PIC X(5).
+      *****EXEC SQL INCLUDE MYEMP END-EXEC.
+      ******************************************************************
+      * DCLGEN TABLE(IBMUSER.MY_EMP)                                   *
+      *        LIBRARY(IBMUSER.EMPMAINT.CICS(MYEMP))                   *
+      *        ACTION(REPLACE)                                         *
+      *        LANGUAGE(COBOL)                                         *
+      *        STRUCTURE(MYEMPRECORD)                                  *
+      *        QUOTE                                                   *
+      * ... IS THE DCLGEN COMMAND THAT MADE THE FOLLOWING STATEMENTS   *
+      ******************************************************************
+      *****EXEC SQL DECLARE IBMUSER.MY_EMP TABLE
+      *****( EMPNO                          CHAR(6) NOT NULL,
+      *****  FIRSTNME                       VARCHAR(12) NOT NULL,
+      *****  MIDINIT                        CHAR(1) NOT NULL,
+      *****  LASTNAME                       VARCHAR(15) NOT NULL,
+      *****  WORKDEPT                       CHAR(3),
+      *****  PHONENO                        CHAR(4),
+      *****  HIREDATE                       DATE,
+      *****  JOB                            CHAR(8),
+      *****  EDLEVEL                        SMALLINT,
+      *****  SEX                            CHAR(1),
+      *****  BIRTHDATE                      DATE,
+      *****  SALARY                         DECIMAL(9, 2),
+      *****  BONUS                          DECIMAL(9, 2),
+      *****  COMM                           DECIMAL(9, 2)
+      *****) END-EXEC.
+      ******************************************************************
+      * COBOL DECLARATION FOR TABLE IBMUSER.MY_EMP                     *
+      ******************************************************************
+       01  MYEMPRECORD.
+           10 EMPNO                PIC X(6).
+           10 FIRSTNME.
+              49 FIRSTNME-LEN      PIC S9(4) USAGE COMP.
+              49 FIRSTNME-TEXT     PIC X(12).
+           10 MIDINIT              PIC X(1).
+           10 LASTNAME.
+              49 LASTNAME-LEN      PIC S9(4) USAGE COMP.
+              49 LASTNAME-TEXT     PIC X(15).
+           10 WORKDEPT             PIC X(3).
+           10 PHONENO              PIC X(4).
+           10 HIREDATE             PIC X(10).
+           10 JOB                  PIC X(8).
+           10 EDLEVEL              PIC S9(4) USAGE COMP.
+           10 SEX                  PIC X(1).
+           10 BIRTHDATE            PIC X(10).
+           10 SALARY               PIC S9(7)V9(2) USAGE COMP-3.
+           10 BONUS                PIC S9(7)V9(2) USAGE COMP-3.
+           10 COMM                 PIC S9(7)V9(2) USAGE COMP-3.
+      ******************************************************************
+      * THE NUMBER OF COLUMNS DESCRIBED BY THIS DECLARATION IS 14      *
+      ******************************************************************
+        77 SQL-TEMP      PIC X(18).
+        77 SQL-NULL      PIC S9(9) COMP-4 VALUE +0.
+        77 SQL-INIT-FLAG PIC S9(4) COMP-4 VALUE +0.
+           88 SQL-INIT-DONE VALUE +1.
+        01 SQL-PLIST2.
+           05 SQL-PLIST-CON   PIC S9(9) COMP-4 VALUE +2637824.
+           05 SQL-CALLTYPE    PIC S9(4) COMP-4 VALUE +30.
+           05 SQL-PROG-NAME   PIC X(8)         VALUE 'EMPCRE2 '.
+           05 SQL-TIMESTAMP-1 PIC S9(9) COMP-4 VALUE +475503330.
+           05 SQL-TIMESTAMP-2 PIC S9(9) COMP-4 VALUE +45757102.
+           05 SQL-SECTION     PIC S9(4) COMP-4 VALUE +1.
+           05 SQL-CODEPTR     PIC S9(9) COMP-4.
+           05 SQL-VPARMPTR    PIC S9(9) COMP-4 VALUE +0.
+           05 SQL-APARMPTR    PIC S9(9) COMP-4 VALUE +0.
+           05 SQL-STMT-NUM    PIC S9(4) COMP-4 VALUE +102.
+           05 SQL-STMT-TYPE   PIC S9(4) COMP-4 VALUE +232.
+           05 SQL-PVAR-LIST2.
+              10 PRE-SQLDAID  PIC X(8)  VALUE 'SQLDA   '.
+              10 PRE-SQLDABC  PIC S9(9) COMP-4 VALUE +632.
+              10 PRE-SQLN     PIC S9(4) COMP-4 VALUE +14.
+              10 PRE-SQLLD    PIC S9(4) COMP-4 VALUE +14.
+              10 PRE-SQLVAR.
+                12 SQLVAR-BASE1.
+                  15 SQL-PVAR-TYPE1      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN1       PIC S9(4) COMP-4 VALUE +6.
+                  15 SQL-PVAR-ADDRS1.
+                     20 SQL-PVAR-ADDR1   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND1    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME1.
+                     20 SQL-PVAR-NAMEL1  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC1  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE2.
+                  15 SQL-PVAR-TYPE2      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN2       PIC S9(4) COMP-4 VALUE +12.
+                  15 SQL-PVAR-ADDRS2.
+                     20 SQL-PVAR-ADDR2   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND2    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME2.
+                     20 SQL-PVAR-NAMEL2  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC2  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE3.
+                  15 SQL-PVAR-TYPE3      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN3       PIC S9(4) COMP-4 VALUE +1.
+                  15 SQL-PVAR-ADDRS3.
+                     20 SQL-PVAR-ADDR3   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND3    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME3.
+                     20 SQL-PVAR-NAMEL3  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC3  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE4.
+                  15 SQL-PVAR-TYPE4      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN4       PIC S9(4) COMP-4 VALUE +15.
+                  15 SQL-PVAR-ADDRS4.
+                     20 SQL-PVAR-ADDR4   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND4    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME4.
+                     20 SQL-PVAR-NAMEL4  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC4  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE5.
+                  15 SQL-PVAR-TYPE5      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN5       PIC S9(4) COMP-4 VALUE +3.
+                  15 SQL-PVAR-ADDRS5.
+                     20 SQL-PVAR-ADDR5   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND5    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME5.
+                     20 SQL-PVAR-NAMEL5  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC5  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE6.
+                  15 SQL-PVAR-TYPE6      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN6       PIC S9(4) COMP-4 VALUE +4.
+                  15 SQL-PVAR-ADDRS6.
+                     20 SQL-PVAR-ADDR6   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND6    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME6.
+                     20 SQL-PVAR-NAMEL6  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC6  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE7.
+                  15 SQL-PVAR-TYPE7      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN7       PIC S9(4) COMP-4 VALUE +10.
+                  15 SQL-PVAR-ADDRS7.
+                     20 SQL-PVAR-ADDR7   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND7    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME7.
+                     20 SQL-PVAR-NAMEL7  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC7  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE8.
+                  15 SQL-PVAR-TYPE8      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN8       PIC S9(4) COMP-4 VALUE +8.
+                  15 SQL-PVAR-ADDRS8.
+                     20 SQL-PVAR-ADDR8   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND8    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME8.
+                     20 SQL-PVAR-NAMEL8  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC8  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE9.
+                  15 SQL-PVAR-TYPE9      PIC S9(4) COMP-4 VALUE +500.
+                  15 SQL-PVAR-LEN9       PIC S9(4) COMP-4 VALUE +2.
+                  15 SQL-PVAR-ADDRS9.
+                     20 SQL-PVAR-ADDR9   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND9    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME9.
+                     20 SQL-PVAR-NAMEL9  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC9  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE10.
+                  15 SQL-PVAR-TYPE10      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN10       PIC S9(4) COMP-4 VALUE +1.
+                  15 SQL-PVAR-ADDRS10.
+                     20 SQL-PVAR-ADDR10   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND10    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME10.
+                     20 SQL-PVAR-NAMEL10  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC10  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE11.
+                  15 SQL-PVAR-TYPE11      PIC S9(4) COMP-4 VALUE +452.
+                  15 SQL-PVAR-LEN11       PIC S9(4) COMP-4 VALUE +10.
+                  15 SQL-PVAR-ADDRS11.
+                     20 SQL-PVAR-ADDR11   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND11    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME11.
+                     20 SQL-PVAR-NAMEL11  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC11  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE12.
+                  15 SQL-PVAR-TYPE12      PIC S9(4) COMP-4 VALUE +484.
+                  15 SQL-PVAR-LEN12       PIC S9(4) COMP-4 VALUE +2306.
+                  15 SQL-PVAR-ADDRS12.
+                     20 SQL-PVAR-ADDR12   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND12    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME12.
+                     20 SQL-PVAR-NAMEL12  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC12  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE13.
+                  15 SQL-PVAR-TYPE13      PIC S9(4) COMP-4 VALUE +484.
+                  15 SQL-PVAR-LEN13       PIC S9(4) COMP-4 VALUE +2306.
+                  15 SQL-PVAR-ADDRS13.
+                     20 SQL-PVAR-ADDR13   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND13    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME13.
+                     20 SQL-PVAR-NAMEL13  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC13  PIC X(30) VALUE ' '.
+                12 SQLVAR-BASE14.
+                  15 SQL-PVAR-TYPE14      PIC S9(4) COMP-4 VALUE +484.
+                  15 SQL-PVAR-LEN14       PIC S9(4) COMP-4 VALUE +2306.
+                  15 SQL-PVAR-ADDRS14.
+                     20 SQL-PVAR-ADDR14   PIC S9(9) COMP-4.
+                     20 SQL-PVAR-IND14    PIC S9(9) COMP-4.
+                  15 SQL-PVAR-NAME14.
+                     20 SQL-PVAR-NAMEL14  PIC S9(4) COMP-4 VALUE +0.
+                     20 SQL-PVAR-NAMEC14  PIC X(30) VALUE ' '.
+
+       LINKAGE SECTION.
+       01  DFHCOMMAREA.
+            COPY CRECP.
+      *
+       PROCEDURE DIVISION USING DFHCOMMAREA.
+      *
+       DSNSQL SECTION.
+       SQL-SKIP.
+           GO TO SQL-INIT-END.
+       SQL-INITIAL.
+           MOVE 1 TO SQL-INIT-FLAG.
+           CALL 'DSNHADDR' USING SQL-VPARMPTR OF SQL-PLIST2 SQL-PVAR-LIS
+      -    T2.
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS1 IN
+           SQL-PVAR-LIST2 WS-EMPNO OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS2 IN
+           SQL-PVAR-LIST2 WS-FIRSTNME OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS3 IN
+           SQL-PVAR-LIST2 WS-MIDINIT OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS4 IN
+           SQL-PVAR-LIST2 WS-LASTNAME OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS5 IN
+           SQL-PVAR-LIST2 WS-WORKDEPT OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS6 IN
+           SQL-PVAR-LIST2 WS-PHONENO OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS7 IN
+           SQL-PVAR-LIST2 WS-HIREDATE OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS8 IN
+           SQL-PVAR-LIST2 WS-JOB OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS9 IN
+           SQL-PVAR-LIST2 WS-EDLEVEL OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS10 IN
+           SQL-PVAR-LIST2 WS-SEX OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS11 IN
+           SQL-PVAR-LIST2 WS-BIRTHDATE OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS12 IN
+           SQL-PVAR-LIST2 WS-SALARY-PD OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS13 IN
+           SQL-PVAR-LIST2 WS-BONUS-PD OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-PVAR-ADDRS14 IN
+           SQL-PVAR-LIST2 WS-COMM-PD OF WS-DBDATA SQL-NULL
+           CALL 'DSNHADDR' USING SQL-CODEPTR OF SQL-PLIST2 SQLCA.
+       SQL-INIT-END.
+           CONTINUE.
+
+       000-MAIN.
+           PERFORM 1000-INSERT-RECORD
+           PERFORM 2000-GET-ME-OUT-OF-HERE.
+      *
+       1000-INSERT-RECORD.
+           MOVE COMM-EMPNO TO WS-EMPNO
+           MOVE COMM-FIRSTNME TO WS-FIRSTNME
+           MOVE COMM-MIDINIT TO WS-MIDINIT
+           MOVE COMM-LASTNAME TO WS-LASTNAME
+           MOVE COMM-WORKDEPT TO WS-WORKDEPT
+           MOVE COMM-PHONENO TO WS-PHONENO
+           MOVE COMM-HIREDATE TO WS-HIREDATE
+           MOVE COMM-JOB TO WS-JOB
+           MOVE COMM-EDLEVEL TO WS-EDLEVEL
+           MOVE COMM-SEX TO WS-SEX
+           MOVE COMM-BIRTHDATE TO WS-BIRTHDATE
+           MOVE COMM-SALARY-PD TO WS-SALARY-PD
+           MOVE COMM-BONUS-PD TO WS-BONUS-PD
+           MOVE COMM-COMM-PD TO WS-COMM-PD
+      *****EXEC SQL
+      *****    INSERT INTO IBMUSER.MY_EMP (EMPNO, FIRSTNME, MIDINIT,
+      *****      LASTNAME, WORKDEPT, PHONENO, HIREDATE, JOB, EDLEVEL,
+      *****      SEX, BIRTHDATE, SALARY, BONUS, COMM)
+      *****    VALUES (:WS-EMPNO, :WS-FIRSTNME, :WS-MIDINIT,
+      *****      :WS-LASTNAME, :WS-WORKDEPT, :WS-PHONENO,
+      *****      :WS-HIREDATE, :WS-JOB, :WS-EDLEVEL, :WS-SEX,
+      *****      :WS-BIRTHDATE, :WS-SALARY-PD, :WS-BONUS-PD,
+      *****      :WS-COMM-PD)
+      *****END-EXEC
+           PERFORM SQL-INITIAL UNTIL SQL-INIT-DONE
+           CALL 'DSNHLI' USING SQL-PLIST2
+           IF SQLSTATE = '00000'
+               MOVE 'Y' TO COMM-SUCCESS
+           ELSE
+               MOVE 'N' TO COMM-SUCCESS
+               MOVE SQLCODE TO COMM-SQL-CODE
+               MOVE SQLSTATE TO COMM-SQL-STATE
+           END-IF.
+      *
+       2000-GET-ME-OUT-OF-HERE.
+           EXEC CICS
+              RETURN
+           END-EXEC.

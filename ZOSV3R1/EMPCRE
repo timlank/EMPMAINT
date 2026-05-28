@@ -1,0 +1,385 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EMPCRE.
+       ENVIRONMENT DIVISION.
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       01  SWITCHES.
+           05  VALID-DATA-SW        PIC X     VALUE 'Y'.
+               88  VALID-DATA                 VALUE 'Y'.
+       01  FLAGS.
+           05  SEND-FLAG            PIC X.
+               88  SEND-ERASE                 VALUE '1'.
+               88  SEND-DATAONLY              VALUE '2'.
+               88  SEND-DATAONLY-ALARM        VALUE '3'.
+       01  COMMUNICATION-AREA       PIC X(79).
+       01  SAL2-CTR                 PIC 9 VALUE 0.
+       01  BON2-CTR                 PIC 9 VALUE 0.
+       01  COM2-CTR                 PIC 9 VALUE 0.
+       01  WS-DBDATA.
+           05  WS-EMPNO             PIC X(6).
+           05  WS-FIRSTNME          PIC X(12).
+           05  WS-MIDINIT           PIC X.
+           05  WS-LASTNAME          PIC X(15).
+           05  WS-WORKDEPT          PIC X(3).
+           05  WS-PHONENO           PIC X(4).
+           05  WS-HIREDATE          PIC X(10).
+           05  WS-JOB               PIC X(8).
+           05  WS-EDLEVEL           PIC X(4).
+           05  WS-EDLEVEL-PD        PIC S9(4) USAGE COMP.
+           05  WS-SEX               PIC X.
+           05  WS-BIRTHDATE         PIC X(10).
+           05  WS-SALARY            PIC X(10).
+           05  WS-BONUS             PIC X(10).
+           05  WS-COMM              PIC X(10).
+           05  WS-SALARY-PD         PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-BONUS-PD          PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-COMM-PD           PIC S9(7)V9(2) USAGE COMP-3.
+           05  WS-SAL1-SRC          PIC X(7).
+           05  WS-BON1-SRC          PIC X(7).
+           05  WS-COM1-SRC          PIC X(7).
+           05  WS-SAL2-SRC          PIC X(2).
+           05  WS-BON2-SRC          PIC X(2).
+           05  WS-COM2-SRC          PIC X(2).
+       01  SUBPGM-PARMS.
+           05  SUBPGM-EMPNO             PIC X(6).
+           05  SUBPGM-FIRSTNME          PIC X(12).
+           05  SUBPGM-MIDINIT           PIC X.
+           05  SUBPGM-LASTNAME          PIC X(15).
+           05  SUBPGM-WORKDEPT          PIC X(3).
+           05  SUBPGM-PHONENO           PIC X(4).
+           05  SUBPGM-HIREDATE          PIC X(10).
+           05  SUBPGM-JOB               PIC X(8).
+           05  SUBPGM-EDLEVEL-PD        PIC S9(4) USAGE COMP.
+           05  SUBPGM-SEX               PIC X.
+           05  SUBPGM-BIRTHDATE         PIC X(10).
+           05  SUBPGM-SALARY-PD         PIC S9(7)V9(2) USAGE COMP-3.
+           05  SUBPGM-BONUS-PD          PIC S9(7)V9(2) USAGE COMP-3.
+           05  SUBPGM-COMM-PD           PIC S9(7)V9(2) USAGE COMP-3.
+           05  SUBPGM-SUCCESS           PIC X.
+           05  SUBPGM-SQL-CODE          PIC S9(9) COMP-4.
+           05  SUBPGM-SQL-STATE         PIC X(5).
+       COPY EMPMP2.
+       COPY DFHAID.
+       COPY ATTR.
+       LINKAGE SECTION.
+       01  DFHCOMMAREA              PIC X(106).
+      *
+       PROCEDURE DIVISION.
+      *
+       0000-PROCESS-EMPLOYEE-CREATE.
+           IF EIBCALEN > ZERO
+                MOVE DFHCOMMAREA TO COMMUNICATION-AREA
+           END-IF.
+           EVALUATE TRUE
+               WHEN EIBCALEN = ZERO
+                   MOVE LOW-VALUE TO EMPMAP2O
+                   MOVE 'EMCR'    TO TRANSIDO
+                   SET SEND-ERASE TO TRUE
+                   PERFORM 1400-SEND-EMPLOYEE-MAP
+                   MOVE 'FIRST TIME' TO COMMUNICATION-AREA
+               WHEN EIBAID = DFHCLEAR
+                   MOVE 'CLEAR HIT' TO COMMUNICATION-AREA
+                   MOVE LOW-VALUE TO EMPMAP2O
+                   MOVE 'EMCR'    TO TRANSIDO
+                   SET SEND-ERASE TO TRUE
+                   PERFORM 1400-SEND-EMPLOYEE-MAP
+               WHEN EIBAID = DFHPF3 OR DFHPF12
+                   EXEC CICS
+                      XCTL PROGRAM('EMPMAIN')
+                   END-EXEC
+               WHEN COMMUNICATION-AREA = 'NEED CLEAR'
+                   EXEC CICS
+                       RETURN TRANSID('EMCR')
+                       COMMAREA(COMMUNICATION-AREA)
+                   END-EXEC
+               WHEN COMMUNICATION-AREA = 'FIX IT'
+                   PERFORM 1000-PROCESS-EMPLOYEE-MAP
+               WHEN EIBAID = DFHPA1 OR DFHPA2 OR DFHPA3
+                   CONTINUE
+               WHEN EIBAID = DFHENTER
+                   MOVE DFHCOMMAREA TO COMMUNICATION-AREA
+                   IF COMMUNICATION-AREA = 'NEXT RUN'
+                     MOVE 'N' TO VALID-DATA-SW
+                   END-IF
+                   PERFORM 1000-PROCESS-EMPLOYEE-MAP
+               WHEN OTHER
+                   MOVE LOW-VALUE TO EMPMAP2O
+                   MOVE 'Invalid key pressed.' TO MSG1O
+                   SET SEND-DATAONLY-ALARM TO TRUE
+                   MOVE SPACES TO EMPNOO
+                   PERFORM 1400-SEND-EMPLOYEE-MAP
+           END-EVALUATE.
+           EXEC CICS
+              RETURN TRANSID('EMCR')
+                  COMMAREA(COMMUNICATION-AREA)
+           END-EXEC.
+      *
+       1000-PROCESS-EMPLOYEE-MAP.
+           MOVE DFHCOMMAREA TO COMMUNICATION-AREA
+           PERFORM 1100-RECEIVE-EMPLOYEE-MAP
+           PERFORM 1200-EDIT-EMPLOYEE-DATA
+           INITIALIZE WS-EDLEVEL
+           INITIALIZE WS-EDLEVEL-PD
+           INITIALIZE WS-SALARY
+           INITIALIZE WS-BONUS
+           INITIALIZE WS-COMM
+           INITIALIZE WS-SALARY-PD
+           INITIALIZE WS-BONUS-PD
+           INITIALIZE WS-COMM-PD
+           IF VALID-DATA
+               MOVE EMPNOI TO WS-EMPNO
+               MOVE FIRSTNMI TO WS-FIRSTNME
+               MOVE MIDINITI TO WS-MIDINIT
+               MOVE LASTNAMI TO WS-LASTNAME
+               MOVE WORKDEPI TO WS-WORKDEPT
+               MOVE PHONENOI TO WS-PHONENO
+               MOVE HIREDATI TO WS-HIREDATE
+               MOVE JOBI TO WS-JOB
+               MOVE EDLEVELI TO WS-EDLEVEL
+               MOVE SEXI TO WS-SEX
+               MOVE BIRTHDAI TO WS-BIRTHDATE
+               MOVE SAL1I TO WS-SAL1-SRC
+               MOVE BON1I TO WS-BON1-SRC
+               MOVE COM1I TO WS-COM1-SRC
+               MOVE SAL2I TO WS-SAL2-SRC
+               MOVE BON2I TO WS-BON2-SRC
+               MOVE COM2I TO WS-COM2-SRC
+               STRING
+                   WS-SAL1-SRC DELIMITED BY SIZE
+                   '.' DELIMITED BY SIZE
+                   WS-SAL2-SRC DELIMITED BY SIZE
+                   INTO WS-SALARY
+               END-STRING
+               STRING
+                   WS-BON1-SRC DELIMITED BY SIZE
+                   '.' DELIMITED BY SIZE
+                   WS-BON2-SRC DELIMITED BY SIZE
+                   INTO WS-BONUS
+               END-STRING
+               STRING
+                   WS-COM1-SRC DELIMITED BY SIZE
+                   '.' DELIMITED BY SIZE
+                   WS-COM2-SRC DELIMITED BY SIZE
+                   INTO WS-COMM
+               END-STRING
+               COMPUTE WS-EDLEVEL-PD = FUNCTION NUMVAL(WS-EDLEVEL)
+               COMPUTE WS-SALARY-PD = FUNCTION NUMVAL(WS-SALARY)
+               COMPUTE WS-BONUS-PD = FUNCTION NUMVAL(WS-BONUS)
+               COMPUTE WS-COMM-PD = FUNCTION NUMVAL(WS-COMM)
+               MOVE WS-EMPNO TO SUBPGM-EMPNO
+               MOVE WS-FIRSTNME TO SUBPGM-FIRSTNME
+               MOVE WS-MIDINIT TO SUBPGM-MIDINIT
+               MOVE WS-LASTNAME TO SUBPGM-LASTNAME
+               MOVE WS-WORKDEPT TO SUBPGM-WORKDEPT
+               MOVE WS-PHONENO TO SUBPGM-PHONENO
+               MOVE WS-HIREDATE TO SUBPGM-HIREDATE
+               MOVE WS-JOB TO SUBPGM-JOB
+               MOVE WS-EDLEVEL-PD TO SUBPGM-EDLEVEL-PD
+               MOVE WS-SEX TO SUBPGM-SEX
+               MOVE WS-BIRTHDATE TO SUBPGM-BIRTHDATE
+               MOVE WS-SALARY-PD TO SUBPGM-SALARY-PD
+               MOVE WS-BONUS-PD TO SUBPGM-BONUS-PD
+               MOVE WS-COMM-PD TO SUBPGM-COMM-PD
+               PERFORM 1300-PUT-EMPLOYEE-RECORD
+               MOVE 'NEED CLEAR' TO COMMUNICATION-AREA
+           ELSE
+               MOVE 'FIX IT' TO COMMUNICATION-AREA
+           END-IF
+               SET SEND-DATAONLY-ALARM TO TRUE
+               PERFORM 1400-SEND-EMPLOYEE-MAP.
+      *
+       1100-RECEIVE-EMPLOYEE-MAP.
+           INITIALIZE SAL1I
+           INITIALIZE SAL2I
+           INITIALIZE BON1I
+           INITIALIZE BON2I
+           INITIALIZE COM1I
+           INITIALIZE COM2I
+           EXEC CICS
+               RECEIVE MAP('EMPMAP2')
+                       MAPSET('EMPMP2')
+                       INTO(EMPMAP2I)
+           END-EXEC.
+      *
+       1200-EDIT-EMPLOYEE-DATA.
+           IF COM2L < 2
+             OR COM2I = SPACES
+                MOVE 'You must enter commission cents in 2 digits'
+                    TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           PERFORM VARYING COM2-CTR FROM 1 BY 1 UNTIL COM2-CTR > 2
+             IF COM2I(COM2-CTR:1) IS EQUAL TO SPACE
+                MOVE 'You must enter commission cents in 2 digits'
+                    TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+             END-IF
+           END-PERFORM
+           IF COM1L = ZERO
+             OR COM1I = SPACES
+                MOVE 'You must enter a commission' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF COM1I(1:1) IS NUMERIC AND COM1I(2:1) IS NUMERIC AND
+              COM1I(3:1) IS NUMERIC AND COM1I(4:1) IS NUMERIC AND
+              COM1I(5:1) IS NUMERIC AND COM1I(6:1) IS NUMERIC AND
+              COM1I(7:1) IS NUMERIC AND COM2I(1:1) IS NUMERIC AND
+              COM2I(2:1) IS NUMERIC
+               CONTINUE
+           ELSE
+               MOVE 'You must only enter digits for commission' TO
+                   MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF BON2L < 2
+             OR BON2I = SPACES
+                MOVE 'You must enter bonus cents in 2 digits' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           PERFORM VARYING BON2-CTR FROM 1 BY 1 UNTIL BON2-CTR > 2
+             IF BON2I(BON2-CTR:1) IS EQUAL TO SPACE
+                MOVE 'You must enter bonus cents in 2 digits' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+             END-IF
+           END-PERFORM
+           IF BON1L = ZERO
+             OR BON1I = SPACES
+                MOVE 'You must enter a bonus' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF BON1I(1:1) IS NUMERIC AND BON1I(2:1) IS NUMERIC AND
+              BON1I(3:1) IS NUMERIC AND BON1I(4:1) IS NUMERIC AND
+              BON1I(5:1) IS NUMERIC AND BON1I(6:1) IS NUMERIC AND
+              BON1I(7:1) IS NUMERIC AND BON2I(1:1) IS NUMERIC AND
+              BON2I(2:1) IS NUMERIC
+               CONTINUE
+           ELSE
+               MOVE 'You must only enter digits for bonus' TO MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF SAL2L < 2
+             OR SAL2I = SPACES
+                MOVE 'You must enter salary cents in 2 digits' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           PERFORM VARYING SAL2-CTR FROM 1 BY 1 UNTIL SAL2-CTR > 2
+             IF SAL2I(SAL2-CTR:1) IS EQUAL TO SPACE
+                MOVE 'You must enter salary cents in 2 digits' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+             END-IF
+           END-PERFORM
+           IF SAL1L = ZERO
+             OR SAL1I = SPACES
+                MOVE 'You must enter a salary' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF SAL1I(1:1) IS NUMERIC AND SAL1I(2:1) IS NUMERIC AND
+              SAL1I(3:1) IS NUMERIC AND SAL1I(4:1) IS NUMERIC AND
+              SAL1I(5:1) IS NUMERIC AND SAL1I(6:1) IS NUMERIC AND
+              SAL1I(7:1) IS NUMERIC AND SAL2I(1:1) IS NUMERIC AND
+              SAL2I(2:1) IS NUMERIC
+               CONTINUE
+           ELSE
+               MOVE 'You must only enter digits for salary' TO MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF BIRTHDAI(3:1) NOT EQUAL '.' OR BIRTHDAI(6:1)
+             NOT EQUAL '.'
+               MOVE 'You must format the birthdate with periods'
+                  TO MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF BIRTHDAI(1:1) IS NUMERIC AND BIRTHDAI(2:1) IS NUMERIC
+             AND BIRTHDAI(4:1) IS NUMERIC AND BIRTHDAI(5:1) IS NUMERIC
+             AND BIRTHDAI(7:1) IS NUMERIC AND BIRTHDAI(8:1) IS NUMERIC
+             AND BIRTHDAI(9:1) IS NUMERIC AND BIRTHDAI(10:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                MOVE 'You must enter only digits for birthdate MM DD YYY
+      -         'Y' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF EDLEVELL = ZERO
+             OR EDLEVELI = SPACES
+                MOVE 'You must enter an education level' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF EDLEVELI(1:1) IS NUMERIC AND EDLEVELI(2:1) IS NUMERIC
+             AND EDLEVELI(3:1) IS NUMERIC AND EDLEVELI(4:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                MOVE 'You must enter only digits for education level'
+                   TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF HIREDATI(3:1) NOT EQUAL '.' OR HIREDATI(6:1)
+             NOT EQUAL '.'
+               MOVE 'You must format the hiredate with periods'
+                  TO MSG1O
+               MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF HIREDATI(1:1) IS NUMERIC AND HIREDATI(2:1) IS NUMERIC
+             AND HIREDATI(4:1) IS NUMERIC AND HIREDATI(5:1) IS NUMERIC
+             AND HIREDATI(7:1) IS NUMERIC AND HIREDATI(8:1) IS NUMERIC
+             AND HIREDATI(9:1) IS NUMERIC AND HIREDATI(10:1) IS NUMERIC
+                CONTINUE
+           ELSE
+                MOVE 'You must enter only digits for hiredate MM DD YYYY
+      -         '' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF
+           IF EMPNOL = ZERO
+             OR EMPNOI = SPACES
+                MOVE 'You must enter an employee nubmer' TO MSG1O
+                MOVE 'N' TO VALID-DATA-SW
+           END-IF.
+      *
+       1300-PUT-EMPLOYEE-RECORD.
+           EXEC CICS LINK
+               PROGRAM('EMPCRE2')
+               COMMAREA(SUBPGM-PARMS)
+               SYNCONRETURN
+           END-EXEC
+           IF SUBPGM-SUCCESS = 'N'
+              MOVE SUBPGM-SQL-CODE TO LASTNAMO
+              MOVE SUBPGM-SQL-STATE TO FIRSTNMO
+              MOVE 'RECORD ADD FAILED - SEE CODES IN FIRSTNAME AND LASTN
+      -       'AME FIELDS FOR DIAGNOSIS - PRESS CLEAR KEY TO CONTINUE'
+              TO MSG1O
+           END-IF
+           IF SUBPGM-SUCCESS = 'Y'
+              MOVE 'RECORD ADDED SUCCESSFULLY - PRESS CLEAR KEY TO CONTI
+      -           'NUE'
+                  TO MSG1O
+              MOVE 'NEXT RUN' TO COMMUNICATION-AREA
+           END-IF.
+      *
+       1400-SEND-EMPLOYEE-MAP.
+           EVALUATE TRUE
+               WHEN SEND-ERASE
+                   EXEC CICS
+                       SEND MAP('EMPMAP2')
+                            MAPSET('EMPMP2')
+                            FROM(EMPMAP2O)
+                            CURSOR(183)
+                            ERASE
+                   END-EXEC
+               WHEN SEND-DATAONLY
+                   EXEC CICS
+                       SEND MAP('EMPMAP2')
+                            MAPSET('EMPMP2')
+                            FROM(EMPMAP2O)
+                            CURSOR(183)
+                            DATAONLY
+                   END-EXEC
+               WHEN SEND-DATAONLY-ALARM
+                   EXEC CICS
+                       SEND MAP('EMPMAP2')
+                            MAPSET('EMPMP2')
+                            FROM(EMPMAP2O)
+                            CURSOR(183)
+                            DATAONLY
+                            ALARM
+                   END-EXEC
+           END-EVALUATE.
+      *
